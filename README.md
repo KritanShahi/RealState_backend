@@ -6,35 +6,38 @@ A backend API for the Real Estate Next.js app built with Express, TypeScript, an
 
 Create a `.env` file in the root directory:
 
-```env
-DATABASE_URL=postgresql://postgres:<password>@localhost:5432/db_name?schema=public
+
+DATABASE_URL=postgresql://postgres:password@localhost:5432/db_name?schema=public 
+
 JWT_SECRET="secretkey"
+
 PORT=4000
+
 CORS_ORIGIN="http://localhost:3000"
 
-Setup
+## Setup
 Clone the repository:
-git clone https://github.com/<your-username>/<your-repo>.git
+git clone https://github.com/KritanShahi/RealState_backend.git
 
-Copy .env.example to .env and update values.
+Copy .env and update values.
 
-Install dependencies:
+## Install dependencies:
 
 npm install
 
-Generate Prisma client:
+### Generate Prisma client:
 
 npm run prisma:generate
 
-Run database migration:
+### Run database migration:
 
 npm run prisma:migrate
 
-Seed initial properties:
+### Seed initial properties:
 
 npm run prisma:seed
 
-Start API server:
+## Start API server:
 
 npm run dev
 

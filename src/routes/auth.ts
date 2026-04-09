@@ -19,7 +19,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required")
 });
 
-function signToken(userId: number, role: "BUYER" | "ADMIN"): string {
+function signToken(userId: string, role: "buyer" | "admin"): string {
   return jwt.sign({ userId, role }, config.jwtSecret, { expiresIn: "1d" });
 }
 

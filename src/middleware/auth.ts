@@ -4,8 +4,8 @@ import { config } from "../config";
 import { ApiError } from "../utils/http";
 
 type JwtPayload = {
-  userId: number;
-  role: "BUYER" | "ADMIN";
+  userId: string;
+  role: "buyer" | "admin";
 };
 
 export function authRequired(req: Request, _res: Response, next: NextFunction): void {

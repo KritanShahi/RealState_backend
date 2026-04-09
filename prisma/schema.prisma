@@ -7,38 +7,98 @@ datasource db {
 }
 
 enum Role {
-  BUYER
-  ADMIN
+  buyer
+  admin
+}
+
+enum PropertyStatus {
+  available
+  sold
+}
+
+enum InquiryStatus {
+  pending
+  replied
 }
 
 model User {
-  id           Int         @id @default(autoincrement())
-  email        String      @unique
-  passwordHash String
+  id           String      @id @default(uuid()) @db.Uuid
   name         String
-  role         Role        @default(BUYER)
+  email        String      @unique
+  passwordHash String      @map("password_hash")
+  role         Role        @default(buyer)
+  phone        String?
   favourites   Favourite[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  inquiries    Inquiry[]
+  reviews      Review[]
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  @@map("users")
 }
 
 model Property {
-  id         Int         @id @default(autoincrement())
-  title      String
-  location   String
-  price      Int
-  favourites Favourite[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id            String          @id @default(uuid()) @db.Uuid
+  title         String
+  description   String?
+  price         Decimal?        @db.Decimal(12, 2)
+  address       String?
+  city          String?
+  country       String?
+  propertyType  String?         @map("property_type")
+  status        PropertyStatus  @default(available)
+  favourites    Favourite[]
+  images        PropertyImage[]
+  inquiries     Inquiry[]
+  reviews       Review[]
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  imageUrl   String   @map("image_url")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_images")
 }
 
 model Favourite {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  propertyId Int
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@unique([userId, propertyId])
+  @@map("favourites")
+}
+
+model Inquiry {
+  id         String        @id @default(uuid()) @db.Uuid
+  userId     String?       @map("user_id") @db.Uuid
+  propertyId String?       @map("property_id") @db.Uuid
+  message    String?
+  status     InquiryStatus @default(pending)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  user       User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  property   Property?     @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@map("inquiries")
+}
+
+model Review {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String?   @map("user_id") @db.Uuid
+  propertyId String?   @map("property_id") @db.Uuid
+  rating     Int?
+  comment    String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@map("reviews")
 }

@@ -7,8 +7,14 @@ import { ApiError } from "../utils/http";
 const router = Router();
 
 const paramsSchema = z.object({
-  propertyId: z.coerce.number().int().positive()
+  propertyId: z.string().uuid()
 });
+function normalizeImageUrl(url: string, baseUrl: string): string {
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `${baseUrl}${url}`;
+}
 
 router.get("/", authRequired, async (req, res, next) => {
   try {
@@ -17,13 +23,23 @@ router.get("/", authRequired, async (req, res, next) => {
       throw new ApiError(401, "Unauthorized");
     }
 
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
     const favourites = await prisma.favourite.findMany({
       where: { userId },
-      include: { property: true },
+      include: { property: { include: { images: true } } },
       orderBy: { createdAt: "desc" }
     });
 
-    res.json(favourites.map((favourite) => favourite.property));
+    res.json(
+      favourites.map((favourite) => ({
+        ...favourite.property,
+        price: favourite.property.price ? Number(favourite.property.price) : null,
+        images: favourite.property.images.map((image) => ({
+          ...image,
+          imageUrl: normalizeImageUrl(image.imageUrl, baseUrl)
+        }))
+      }))
+    );
   } catch (error) {
     next(error);
   }
